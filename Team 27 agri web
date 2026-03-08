@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agriculture Export Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Reset and fonts */
+    body {
+      margin:0; padding:0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #d4edda, #f0f0f0);
+      display: flex; justify-content: center; align-items: flex-start;
+      min-height: 100vh;
+      padding-top: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+
+    h1 {
+      text-align:center;
+      background: #2d7a2d;
+      color:white;
+      margin:0;
+      padding: 20px;
+      font-weight: 500;
+    }
+
+    .info {
+      padding: 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .info ul {
+      padding-left: 20px;
+    }
+
+    .button-primary {
+      display:block;
+      width:90%;
+      margin: 10px auto;
+      padding:12px 0;
+      background: #28a745;
+      color:white;
+      text-align:center;
+      border:none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor:pointer;
+      transition: all 0.2s ease;
+    }
+
+    .button-primary:hover {
+      background: #218838;
+    }
+
+    .crop-buttons {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content: center;
+      padding: 0 10px 10px 10px;
+    }
+
+    .crop-buttons button {
+      flex: 1 1 40%;
+      min-width: 100px;
+      background: #17a2b8;
+      color:white;
+      padding:10px 0;
+      border:none;
+      border-radius:20px;
+      cursor:pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .crop-buttons button:hover {
+      background: #138496;
+    }
+
+    #chat-container {
+      display:none;
+      flex-direction: column;
+      height: 450px;
+      border-top: 1px solid #ddd;
+    }
+
+    #chat-messages {
+      flex:1;
+      padding:15px;
+      overflow-y:auto;
+      background: #f9f9f9;
+    }
+
+    .message {
+      margin:8px 0;
+      padding:10px 15px;
+      max-width: 75%;
+      border-radius: 20px;
+      clear: both;
+      word-wrap: break-word;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .user {
+      background: #dcf8c6;
+      float:right;
+      text-align:right;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .ai {
+      background: #ffffff;
+      float:left;
+      text-align:left;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    #input-area {
+      display:flex;
+      padding: 10px;
+      border-top:1px solid #ccc;
+      background: #fff;
+    }
+
+    #user-input {
+      flex:1;
+      padding:10px 15px;
+      border-radius: 25px;
+      border:1px solid #ccc;
+      font-size: 14px;
+      outline:none;
+    }
+
+    #send-btn {
+      margin-left:10px;
+      padding:10px 15px;
+      background: #28a745;
+      color:white;
+      border:none;
+      border-radius: 25px;
+      cursor:pointer;
+      transition: all 0.2s ease;
+    }
+
+    #send-btn:hover {
+      background: #218838;
+    }
+
+    /* Scrollbar styling */
+    #chat-messages::-webkit-scrollbar {
+      width:6px;
+    }
+
+    #chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.2);
+      border-radius:3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>AI Agriculture Export Assistant</h1>
+
+  <div class="info">
+    <p>We cover these crops: <strong>Mango, Rice, Wheat, Cotton</strong>.</p>
+    <p>Sample questions you can ask:</p>
+    <ul>
+      <li>How can I export mango to UAE?</li>
+      <li>What documents are needed for rice export?</li>
+      <li>Which countries import Pakistani wheat?</li>
+    </ul>
+  </div>
+
+  <div class="crop-buttons">
+    <button data-crop="Mango">Mango</button>
+    <button data-crop="Rice">Rice</button>
+    <button data-crop="Wheat">Wheat</button>
+    <button data-crop="Cotton">Cotton</button>
+  </div>
+
+  <button id="start-chat" class="button-primary">Ask AI Agent</button>
+
+  <div id="chat-container">
+    <div id="chat-messages"></div>
+    <div id="input-area">
+      <input type="text" id="user-input" placeholder="Type your question here..." />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const startChatBtn = document.getElementById('start-chat');
+  const chatContainer = document.getElementById('chat-container');
+  const sendBtn = document.getElementById('send-btn');
+  const userInput = document.getElementById('user-input');
+  const chatMessages = document.getElementById('chat-messages');
+  const cropButtons = document.querySelectorAll('.crop-buttons button');
+
+  let userPhone = prompt("Enter your phone number to start chat:");
+
+  function addMessage(sender, message) {
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message', sender === 'AI' ? 'ai' : 'user');
+    msgDiv.innerHTML = message;
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  startChatBtn.addEventListener('click', () => {
+    chatContainer.style.display = 'flex';
+    startChatBtn.style.display = 'none';
+    addMessage("AI", "Hello! Ask me any question about crop export.");
+  });
+
+  async function sendMessage(msg, crop=null) {
+    addMessage("You", msg);
+    userInput.value = '';
+
+    const payload = { phone: userPhone, question: msg };
+    if(crop) payload.crop = crop;
+
+    try {
+      const res = await fetch('https://n8n.srv1468126.hstgr.cloud/webhook/29a0cc24-8ea1-4358-9250-a998b976766a', {
+        method:'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      addMessage("AI", data.reply);
+    } catch(e) {
+      addMessage("AI", "Sorry, something went wrong. Please try again.");
+    }
+  }
+
+  sendBtn.addEventListener('click', () => {
+    const msg = userInput.value.trim();
+    if(msg) sendMessage(msg);
+  });
+
+  cropButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const crop = btn.dataset.crop;
+      const msg = `I want to know about ${crop} export.`;
+      sendMessage(msg, crop);
+    });
+  });
+</script>
+
+</body>
+</html>
